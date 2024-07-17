@@ -1,56 +1,33 @@
-const { Schema, model } = require("mongoose");
-
-const contactSchema = new Schema({
-  name: {
-    type: String,
-    required: [true, "Set name for contact"],
-  },
-  email: {
-    type: String,
-  },
-  phone: {
-    type: String,
-  },
-  favorite: {
-    type: Boolean,
-    default: false,
-  },
-  owner: {
-    type: Schema.Types.ObjectId,
-    ref: "user",
-  },
-});
-
-const Contact = model("Contact", contactSchema);
+const Contact = require("../models/contact");
 
 const listContacts = async (userId) => {
   return await Contact.find({ owner: userId });
 };
 
-const getContactById = async (contactId, userId) => {
+const getContactById = async (userId, contactId) => {
   return await Contact.findOne({ _id: contactId, owner: userId });
 };
 
-const removeContact = async (contactId, userId) => {
+const removeContact = async (userId, contactId) => {
   return await Contact.findOneAndRemove({ _id: contactId, owner: userId });
 };
 
-const addContact = async (body) => {
-  return await Contact.create(body);
+const addContact = async (userId, body) => {
+  return await Contact.create({ ...body, owner: userId });
 };
 
-const updateContact = async (contactId, body, userId) => {
+const updateContact = async (userId, contactId, body) => {
   return await Contact.findOneAndUpdate(
     { _id: contactId, owner: userId },
-    body,
+    { ...body },
     { new: true }
   );
 };
 
-const updateStatusContact = async (contactId, body, userId) => {
+const updateStatusContact = async (userId, contactId, body) => {
   return await Contact.findOneAndUpdate(
     { _id: contactId, owner: userId },
-    body,
+    { favorite: body.favorite },
     { new: true }
   );
 };
