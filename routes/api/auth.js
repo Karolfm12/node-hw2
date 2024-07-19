@@ -4,6 +4,10 @@ const bcrypt = require("bcryptjs");
 const User = require("../../models/user");
 const { authenticate } = require("../../middlewares/authenticate");
 const Joi = require("joi");
+const multer = require("multer");
+const path = require("path");
+const Jimp = require("jimp");
+const fs = require("fs/promises");
 
 const router = express.Router();
 
@@ -16,6 +20,18 @@ const validateUser = (data) => {
   });
   return schema.validate(data);
 };
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, "../../tmp"));
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, `${uniqueSuffix}-${file.originalname}`);
+  },
+});
+
+const upload = multer({ storage });
 
 router.post("/signup", async (req, res, next) => {
   try {
@@ -90,5 +106,35 @@ router.get("/current", authenticate, async (req, res) => {
     subscription: req.user.subscription,
   });
 });
+
+router.patch(
+  "/avatars",
+  authenticate,
+  upload.single("avatar"),
+  async (req, res, next) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "File not provided" });
+      }
+
+      const { path: tempPath, filename } = req.file;
+      const avatarPath = path.join(__dirname, "../../public/avatars", filename);
+      try {
+        const avatar = await Jimp.read(tempPath);
+        await avatar.resize(250, 250).writeAsync(avatarPath);
+        await fs.unlink(tempPath);
+      } catch (err) {
+        throw new Error("Failed to process image");
+      }
+
+      req.user.avatarURL = `/public/avatars/${filename}`;
+      await req.user.save();
+
+      res.status(200).json({ avatarURL: req.user.avatarURL });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
 module.exports = router;
