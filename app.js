@@ -1,13 +1,22 @@
+import cors from "cors";
+import express from "express";
+import logger from "morgan";
+import path from "path";
+// import { fileURLToPath } from 'url';
+import connectDB from "./db.js";
+import authRouter from "./routes/api/auth.js";
+import contactsRouter from "./routes/api/contacts.js";
+
 require("dotenv").config();
-const express = require("express");
-const logger = require("morgan");
-const cors = require("cors");
-const path = require("path");
+// const express = require("express");
+// const logger = require("morgan");
+// const cors = require("cors");
+// const path = require("path");
 
-const contactsRouter = require("./routes/api/contacts");
-const authRouter = require("./routes/api/auth");
+// const contactsRouter = require("./routes/api/contacts");
+// const authRouter = require("./routes/api/auth");
 
-const connectDB = require("./db");
+// const connectDB = require("./db");
 
 const app = express();
 

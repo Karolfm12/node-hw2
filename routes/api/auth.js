@@ -1,9 +1,22 @@
-const express = require("express");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
-const User = require("../../models/user");
-const { authenticate } = require("../../middlewares/authenticate");
-const Joi = require("joi");
+// const express = require("express");
+// const jwt = require("jsonwebtoken");
+// const bcrypt = require("bcryptjs");
+// const User = require("../../models/user");
+// const { authenticate } = require("../../middlewares/authenticate");
+// const Joi = require("joi");
+// const nanoid = require("nanoid");
+// const formData = require("form-data");
+// const Mailgun = require("mailgun.js");
+
+import bcrypt from "bcryptjs";
+import express from "express";
+import formData from "form-data";
+import Joi from "joi";
+import jwt from "jsonwebtoken";
+import Mailgun from "mailgun.js";
+import { nanoid } from "nanoid";
+import { authenticate } from "../../middlewares/authenticate";
+import User from "../../models/user";
 const multer = require("multer");
 const path = require("path");
 const Jimp = require("jimp");
@@ -11,7 +24,13 @@ const fs = require("fs/promises");
 
 const router = express.Router();
 
-const { JWT_SECRET } = process.env;
+const { JWT_SECRET, MAILGUN_API_KEY, MAILGUN_DOMAIN } = process.env;
+
+const mailgun = new Mailgun(formData);
+const mg = mailgun.client({
+  username: "api",
+  key: MAILGUN_API_KEY,
+});
 
 const validateUser = (data) => {
   const schema = Joi.object({
@@ -46,15 +65,91 @@ router.post("/signup", async (req, res, next) => {
       return res.status(409).json({ message: "Email in use" });
     }
 
-    const user = new User({ email, password });
+    const avatarURL = gravatar.url(email, { s: "250" });
+    const verificationToken = nanoid();
+    const user = new User({ email, password, avatarURL, verificationToken });
     await user.save();
+
+    const verificationLink = `http://localhost:3000/api/users/verify/${verificationToken}`;
+
+    const data = {
+      from: `Excited User <mailgun@${MAILGUN_DOMAIN}>`,
+      to: [email],
+      subject: "Email Verification",
+      text: `Please verify your email by clicking the following link: ${verificationLink}`,
+      html: `<h1>Please verify your email by clicking the following link:</h1><a href="${verificationLink}">${verificationLink}</a>`,
+    };
+
+    mg.messages
+      .create(MAILGUN_DOMAIN, data)
+      .then((msg) => console.log(msg))
+      .catch((err) => console.log(err));
 
     res.status(201).json({
       user: {
         email: user.email,
         subscription: user.subscription,
+        avatarURL: user.avatarURL,
       },
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/verify/:verificationToken", async (req, res, next) => {
+  try {
+    const { verificationToken } = req.params;
+    const user = await User.findOne({ verificationToken });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.verify = true;
+    user.verificationToken = null;
+    await user.save();
+
+    res.status(200).json({ message: "Verification successful" });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post("/verify", async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: "missing required field email" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.verify) {
+      return res
+        .status(400)
+        .json({ message: "Verification has already been passed" });
+    }
+
+    const verificationLink = `http://localhost:3000/api/users/verify/${user.verificationToken}`;
+
+    const data = {
+      from: `Excited User <mailgun@${MAILGUN_DOMAIN}>`,
+      to: [email],
+      subject: "Email Verification",
+      text: `Please verify your email by clicking the following link: ${verificationLink}`,
+      html: `<h1>Please verify your email by clicking the following link:</h1><a href="${verificationLink}">${verificationLink}</a>`,
+    };
+
+    mg.messages
+      .create(MAILGUN_DOMAIN, data)
+      .then((msg) => console.log(msg))
+      .catch((err) => console.log(err));
+
+    res.status(200).json({ message: "Verification email sent" });
   } catch (error) {
     next(error);
   }
