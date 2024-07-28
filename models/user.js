@@ -1,6 +1,9 @@
-const { Schema, model } = require("mongoose");
-const bcrypt = require("bcryptjs");
-const gravatar = require("gravatar");
+// const { Schema, model } = require("mongoose");
+import { Schema, model } from "mongoose";
+// const bcrypt = require("bcryptjs");
+import bcrypt from "bcryptjs";
+// const gravatar = require("gravatar");
+import gravatar from "gravatar";
 
 const userSchema = new Schema({
   password: {
@@ -45,4 +48,5 @@ userSchema.pre("save", async function (next) {
 });
 
 const User = model("user", userSchema);
-module.exports = User;
+// module.exports = User;
+export default User;

@@ -1,22 +1,23 @@
-const Contact = require("../models/contact");
+// const Contact = require("../models/contact");
+import Contact from "../models/contact.js";
 
-const listContacts = async (userId) => {
+export const listContacts = async (userId) => {
   return await Contact.find({ owner: userId });
 };
 
-const getContactById = async (userId, contactId) => {
+export const getContactById = async (userId, contactId) => {
   return await Contact.findOne({ _id: contactId, owner: userId });
 };
 
-const removeContact = async (userId, contactId) => {
+export const removeContact = async (userId, contactId) => {
   return await Contact.findOneAndRemove({ _id: contactId, owner: userId });
 };
 
-const addContact = async (userId, body) => {
+export const addContact = async (userId, body) => {
   return await Contact.create({ ...body, owner: userId });
 };
 
-const updateContact = async (userId, contactId, body) => {
+export const updateContact = async (userId, contactId, body) => {
   return await Contact.findOneAndUpdate(
     { _id: contactId, owner: userId },
     { ...body },
@@ -24,7 +25,7 @@ const updateContact = async (userId, contactId, body) => {
   );
 };
 
-const updateStatusContact = async (userId, contactId, body) => {
+export const updateStatusContact = async (userId, contactId, body) => {
   return await Contact.findOneAndUpdate(
     { _id: contactId, owner: userId },
     { favorite: body.favorite },
@@ -32,11 +33,11 @@ const updateStatusContact = async (userId, contactId, body) => {
   );
 };
 
-module.exports = {
-  listContacts,
-  getContactById,
-  removeContact,
-  addContact,
-  updateContact,
-  updateStatusContact,
-};
+// module.exports = {
+//   listContacts,
+//   getContactById,
+//   removeContact,
+//   addContact,
+//   updateContact,
+//   updateStatusContact,
+// };

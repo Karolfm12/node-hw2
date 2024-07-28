@@ -1,4 +1,5 @@
-const { Schema, model } = require("mongoose");
+// const { Schema, model } = require("mongoose");
+import { Schema, model } from "mongoose";
 
 const contactSchema = new Schema({
   name: {
@@ -13,7 +14,7 @@ const contactSchema = new Schema({
   },
   favorite: {
     type: Boolean,
-    dafault: false,
+    default: false,
   },
   owner: {
     type: Schema.Types.ObjectId,
@@ -23,4 +24,5 @@ const contactSchema = new Schema({
 
 const Contact = model("Contact", contactSchema);
 
-module.exports = Contact;
+// module.exports = Contact;
+export default Contact;

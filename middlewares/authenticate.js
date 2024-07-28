@@ -6,7 +6,7 @@ import User from "../models/user.js";
 
 const { JWT_SECRET } = process.env;
 
-const authenticate = async (req, res, next) => {
+export const authenticate = async (req, res, next) => {
   const { authorization = "" } = req.header;
   const [bearer, token] = authorization.split(" ");
 
@@ -29,4 +29,4 @@ const authenticate = async (req, res, next) => {
   }
 };
 
-module.exports = { authenticate };
+// module.exports = { authenticate };

@@ -1,12 +1,23 @@
-const express = require("express");
-const {
-  listContacts,
-  getContactById,
-  removeContact,
+// const express = require("express");
+import express from "express";
+// const {
+//   listContacts,
+//   getContactById,
+//   removeContact,
+//   addContact,
+//   updateContact,
+//   updateStatusContact,
+// } = require("../../models/contacts");
+import {
   addContact,
+  getContactById,
+  listContacts,
+  removeContact,
   updateContact,
   updateStatusContact,
-} = require("../../models/contacts");
+} from "../../models/contacts.js";
+// import Contact from "../../models/contacts"
+
 const router = express.Router();
 
 router.get("/", async (req, res, next) => {
@@ -87,4 +98,5 @@ router.patch("/:contactId/favorite", async (req, res, next) => {
   }
 });
 
-module.exports = router;
+// module.exports = router;
+export default router;

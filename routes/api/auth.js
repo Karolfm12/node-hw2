@@ -7,6 +7,7 @@
 // const nanoid = require("nanoid");
 // const formData = require("form-data");
 // const Mailgun = require("mailgun.js");
+import gravatar from "gravatar";
 
 import bcrypt from "bcryptjs";
 import express from "express";
@@ -15,12 +16,16 @@ import Joi from "joi";
 import jwt from "jsonwebtoken";
 import Mailgun from "mailgun.js";
 import { nanoid } from "nanoid";
-import { authenticate } from "../../middlewares/authenticate";
-import User from "../../models/user";
-const multer = require("multer");
-const path = require("path");
-const Jimp = require("jimp");
-const fs = require("fs/promises");
+import { authenticate } from "../../middlewares/authenticate.js";
+import User from "../../models/user.js";
+// const multer = require("multer");
+import multer from "multer";
+// const path = require("path");
+import path from "path";
+// const Jimp = require("jimp");
+import Jimp from "jimp";
+// const fs = require("fs/promises");
+import fs from "fs/promises";
 
 const router = express.Router();
 
@@ -232,4 +237,5 @@ router.patch(
   }
 );
 
-module.exports = router;
+// module.exports = router;
+export default router;
